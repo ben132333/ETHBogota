@@ -17,8 +17,6 @@ contract Song is IERC721, ERC721URIStorage {
     Fractionalizer fractionalizer;
     uint256 constant TOTAL_FRACTIONS = 1000;
 
-    address daiAddress;
-
     constructor(address fractionalizerAddress) ERC721("Song", "SNG") {
         fractionalizer = Fractionalizer(fractionalizerAddress);
     }
@@ -31,13 +29,13 @@ contract Song is IERC721, ERC721URIStorage {
         _setTokenURI(tokenId, metadata);
 
         address fractions = fractionalizer.fractionalize(
+            msg.sender,
             address(this),
             tokenId,
             "SONG",
             "SNG",
             TOTAL_FRACTIONS,
-            cost / TOTAL_FRACTIONS,
-            daiAddress
+            cost / TOTAL_FRACTIONS
         );
 
         emit Minted(tokenId, fractions);

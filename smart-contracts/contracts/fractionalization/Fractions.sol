@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.0;
+import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -9,27 +10,30 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./IFractions.sol";
 
 import {SafeERC721} from "./SafeERC721.sol";
 
-contract FractionsImpl is IERC721Receiver, ERC20, ReentrancyGuard {
-    using SafeMath for uint;
+contract Fractions is IFractionsView, IERC721Receiver, ERC20, ReentrancyGuard {
+    event FractionsMinted();
+
+    using SafeMath for uint256;
     using SafeERC721 for IERC721;
     using SafeERC721 for IERC721Metadata;
     using Strings for uint256;
 
     address public target;
     uint256 public tokenId;
-    uint256 public fractionsCount;
+    uint256 public override fractionsCount;
     uint256 public fractionPrice;
     address public paymentToken;
 
     string private name_;
     string private symbol_;
 
-    address payable treasury;
+    address payable public treasury;
 
-    uint totalSupplyFractions;
+    address[] fractionHolders;
 
     constructor(address _treasury) ERC20("Fractions", "FRAC") {
         treasury = payable(_treasury);
@@ -75,6 +79,7 @@ contract FractionsImpl is IERC721Receiver, ERC20, ReentrancyGuard {
     }
 
     function initialize(
+        address _creator,
         address _target,
         uint256 _tokenId,
         string memory _name,
@@ -102,28 +107,54 @@ contract FractionsImpl is IERC721Receiver, ERC20, ReentrancyGuard {
         paymentToken = _paymentToken;
         name_ = _name;
         symbol_ = _symbol;
+        super._mint(_creator, _fractionsCount / 2);
     }
 
+    function availableToBuy() public view returns (uint256) {
+        return fractionsCount - totalSupply();
+    }
 
-    function vaultBalance() external view returns (uint256 _vaultBalance) {
+    function mint(uint256 amount) external {
         uint256 _fractionsCount = totalSupply();
-        return _fractionsCount * fractionPrice;
+        require(
+            _fractionsCount + amount <= fractionsCount,
+            "fractions reched max supply"
+        );
+        require(
+            IERC20(paymentToken).transferFrom(
+                msg.sender,
+                treasury,
+                amount * fractionPrice
+            )
+        );
+
+        super._mint(msg.sender, amount);
+
+        fractionHolders.push(msg.sender);
+        emit FractionsMinted();
     }
 
-    function vaultBalanceOf(address _from)
-        public
-        view
-        returns (uint256 _vaultBalanceOf)
-    {
-        uint256 _fractionsCount = balanceOf(_from);
-        return _fractionsCount * fractionPrice;
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        super._transfer(from, to, amount);
+
+        bool removeSenderFromHolders = balanceOf(from) == amount;
+        bool addRecipientToHolders = balanceOf(to) == 0;
+        for (uint256 i = 0; i < fractionHolders.length; i++) {
+            if (removeSenderFromHolders && fractionHolders[i] == from)
+                delete fractionHolders[i];
+
+            if (addRecipientToHolders && fractionHolders[i] == to)
+                addRecipientToHolders = false;
+        }
+        if (addRecipientToHolders) fractionHolders.push(from);
     }
 
-    function _mint(address account, uint256 amount) internal override {
-        uint256 _fractionsCount = totalSupply();
-        require(_fractionsCount + amount <= fractionsCount, "fractions reched max supply");
-        IERC20(paymentToken).transferFrom(account, treasury, amount);
-        super._mint(account, amount);
+    function getAllFractionHolders() public view returns(address[] memory) {
+        return fractionHolders;
     }
 
     function onERC721Received(
