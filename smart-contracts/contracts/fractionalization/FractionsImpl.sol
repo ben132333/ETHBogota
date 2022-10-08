@@ -8,10 +8,12 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import {SafeERC721} from "./SafeERC721.sol";
 
 contract FractionsImpl is IERC721Receiver, ERC20, ReentrancyGuard {
+    using SafeMath for uint;
     using SafeERC721 for IERC721;
     using SafeERC721 for IERC721Metadata;
     using Strings for uint256;
@@ -26,6 +28,8 @@ contract FractionsImpl is IERC721Receiver, ERC20, ReentrancyGuard {
     string private symbol_;
 
     address payable treasury;
+
+    uint totalSupplyFractions;
 
     constructor(address _treasury) ERC20("Fractions", "FRAC") {
         treasury = payable(_treasury);
@@ -115,8 +119,9 @@ contract FractionsImpl is IERC721Receiver, ERC20, ReentrancyGuard {
         return _fractionsCount * fractionPrice;
     }
 
-
     function _mint(address account, uint256 amount) internal override {
+        uint256 _fractionsCount = totalSupply();
+        require(_fractionsCount + amount <= fractionsCount, "fractions reched max supply");
         IERC20(paymentToken).transferFrom(account, treasury, amount);
         super._mint(account, amount);
     }

@@ -3,26 +3,27 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "./nftfy/Fractionalizer.sol";
+import "./fractionalization/Fractionalizer.sol";
 
 contract Song is IERC721, ERC721URIStorage {
+    event Minted(uint256 tokenId, address fractions);
 
-    event Minted(uint tokenId, address fractions);
-
+    using SafeMath for uint256;
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    mapping(uint => uint) songToCost;
     Fractionalizer fractionalizer;
+    uint256 constant TOTAL_FRACTIONS = 1000;
 
     address daiAddress;
+
     constructor(address fractionalizerAddress) ERC721("Song", "SNG") {
         fractionalizer = Fractionalizer(fractionalizerAddress);
     }
 
     function mint(string calldata metadata, uint256 cost) public {
-        
         _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
 
@@ -34,8 +35,8 @@ contract Song is IERC721, ERC721URIStorage {
             tokenId,
             "SONG",
             "SNG",
-            1000,
-            cost / 1000,
+            TOTAL_FRACTIONS,
+            cost / TOTAL_FRACTIONS,
             daiAddress
         );
 
