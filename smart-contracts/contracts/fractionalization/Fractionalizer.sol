@@ -18,7 +18,7 @@ contract Fractionalizer is ReentrancyGuard
 
 	function fractionalize(address _creator, address _target, uint256 _tokenId, string memory _name, string memory _symbol, uint256 _fractionsCount, uint256 _fractionPrice) external nonReentrant returns (address _fractions)
 	{
-		address treasury = address(new Treasury());
+		address treasury = address(new Treasury(paymentToken));
 		address _from = msg.sender;
 		_fractions = address(new Fractions(treasury));
 
