@@ -11,9 +11,8 @@ contract Fractionalizer is ReentrancyGuard
 {
 	address public paymentToken;
 	
-	constructor (address _paymentToken) {
-		require(_paymentToken != address(0), "payment token zero address");
-		paymentToken = _paymentToken;
+	constructor () {
+		paymentToken = 0xd393b1E02dA9831Ff419e22eA105aAe4c47E1253;
 	}
 
 	function fractionalize(address _creator, address _target, uint256 _tokenId, string memory _name, string memory _symbol, uint256 _fractionsCount, uint256 _fractionPrice) external nonReentrant returns (address _fractions)

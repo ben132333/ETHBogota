@@ -28,20 +28,20 @@ contract Presale is IERC721, ERC721URIStorage {
     mapping(uint256 => mapping(address => uint256)) tokenToHolders;
 
     constructor() ERC721("PreSale", "PRS") {
-        dai = IERC20(address(0));
+        dai = IERC20(0xd393b1E02dA9831Ff419e22eA105aAe4c47E1253);
         treasury = new Treasury(address(dai));
     }
 
     function mint(
         string calldata metadata,
-        uint256 cost,
+        uint256 totalAmount,
         uint256 amountOfShares
     ) public {
         _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
 
         tokenToAvailableShares[tokenId] = amountOfShares;
-        tokenToSharePrice[tokenId] = cost / amountOfShares;
+        tokenToSharePrice[tokenId] = totalAmount / amountOfShares;
 
         _safeMint(_msgSender(), tokenId);
         _setTokenURI(tokenId, metadata);

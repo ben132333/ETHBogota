@@ -11,7 +11,7 @@ contract Treasury {
 
     constructor(address token) {
         fractions = IFractionsView(msg.sender);
-        tokenAddress = IERC20(token);
+        tokenAddress = IERC20(0xd393b1E02dA9831Ff419e22eA105aAe4c47E1253);
     }
 
     function distributeFunds() public {

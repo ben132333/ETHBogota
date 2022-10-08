@@ -7,6 +7,7 @@ let fractionalizer;
 const metadata = "https://some.url/cid";
 describe("Song", function () {
   before(async function () {
+
     [dep, m1, m2, i, ...addrs] = await ethers.getSigners();
     deployer = dep;
     musicion1 = m1;
