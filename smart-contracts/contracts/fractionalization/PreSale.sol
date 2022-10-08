@@ -27,7 +27,7 @@ contract Presale is IERC721, ERC721URIStorage {
     mapping(uint256 => uint256) tokenToSharePrice;
     mapping(uint256 => mapping(address => uint256)) tokenToHolders;
 
-    constructor(address _treasury) ERC721("PreSale", "PRS") {
+    constructor() ERC721("PreSale", "PRS") {
         dai = IERC20(address(0));
         treasury = new Treasury(address(dai));
     }
