@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "hardhat compile",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +14,12 @@
     "@openzeppelin/contracts": "4.7.3"
   },
   "devDependencies": {
-    "hardhat": "^2.11.2"
+    "hardhat": "^2.11.2",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.3",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.6",
+    "@nomiclabs/hardhat-ethers": "^2.1.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",  
+    "chai": "^4.3.6",
+    "ethers": "^5.7.1"
   }
 }

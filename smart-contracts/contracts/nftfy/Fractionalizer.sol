@@ -5,15 +5,19 @@ import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import { FractionsImpl } from "./FractionsImpl.sol";
+import "../Treasury.sol";
 
 contract Fractionalizer is ReentrancyGuard
 {
 	function fractionalize(address _target, uint256 _tokenId, string memory _name, string memory _symbol, uint256 _fractionsCount, uint256 _fractionPrice, address _paymentToken) external nonReentrant returns (address _fractions)
 	{
+		address treasury = address(new Treasury());
 		address _from = msg.sender;
-		_fractions = address(new FractionsImpl());
-		IERC721(_target).transferFrom(_from, _fractions, _tokenId);
-		FractionsImpl(_fractions).initialize(_from, _target, _tokenId, _name, _symbol, _fractionsCount, _fractionPrice, _paymentToken);
+		_fractions = address(new FractionsImpl(treasury));
+
+		// Who should own the initial token?
+		// IERC721(_target).transferFrom(_from, _fractions, _tokenId);
+		FractionsImpl(_fractions).initialize(_target, _tokenId, _name, _symbol, _fractionsCount, _fractionPrice, _paymentToken);
 		emit Fractionalize(_from, _target, _tokenId, _fractions);
 		return _fractions;
 	}
